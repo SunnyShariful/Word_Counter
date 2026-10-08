@@ -1,0 +1,58 @@
+<resources>
+    <string name="app_name">Word Counter</string>
+    <string name="app_subtitle">Text Diagnostics &amp; Metrics Engine</string>
+    <string name="gaming_tag">STATUS // ONLINE</string>
+
+    <!-- Metrics Labels -->
+    <string name="metric_words">Words</string>
+    <string name="metric_characters">Total Characters</string>
+    <string name="metric_characters_no_spaces">Characters (No Spaces)</string>
+    <string name="metric_sentences">Sentences</string>
+    <string name="metric_paragraphs">Paragraphs</string>
+    <string name="metric_punctuation">Punctuation</string>
+    <string name="metric_numbers">Numbers</string>
+    
+    <!-- Secondary Metrics -->
+    <string name="metric_reading_time">Reading Time</string>
+    <string name="metric_speaking_time">Speaking Time</string>
+    <string name="metric_avg_word_length">Avg Word Length</string>
+    <string name="metric_digits_detail">%1$d digits detected</string>
+
+    <!-- Editor UI -->
+    <string name="input_placeholder">Type, write, or paste your text here for real-time telemetry analysis…</string>
+    <string name="input_label">Input Text Stream</string>
+    <string name="clear_text">Clear Text</string>
+    <string name="generate_sample">Generate Sample</string>
+    <string name="paste_text">Paste</string>
+    <string name="copy_text">Copy Text</string>
+    <string name="copy_metrics">Copy Telemetry</string>
+    <string name="save_to_history">Save to History</string>
+
+    <!-- History UI -->
+    <string name="history_title">Telemetry Log History</string>
+    <string name="history_empty">No calculations recorded yet. Enter text and save to log, or generate sample text.</string>
+    <string name="history_clear_all">Clear History</string>
+    <string name="history_load_entry">Load Text</string>
+    <string name="history_delete_entry">Remove</string>
+    <string name="history_summary_format">%1$d words • %2$d sentences • %3$d punct • %4$d numbers</string>
+
+    <!-- Feedback & Snackbars -->
+    <string name="text_cleared">Input text cleared</string>
+    <string name="undo">Undo</string>
+    <string name="sample_generated">Sample test scenario generated</string>
+    <string name="copied_to_clipboard">Telemetry report copied to clipboard</string>
+    <string name="text_copied">Text copied to clipboard</string>
+    <string name="history_saved">Snapshot recorded in telemetry history</string>
+    <string name="history_cleared">History cleared</string>
+    <string name="empty_input_warning">Input is empty. Enter or paste text first.</string>
+    <string name="already_in_history">Snapshot already exists in history</string>
+
+    <!-- Accessibility Descriptions -->
+    <string name="cd_clear_button">Clear input text</string>
+    <string name="cd_sample_button">Generate test sample text</string>
+    <string name="cd_copy_metrics">Copy calculated metrics</string>
+    <string name="cd_paste_button">Paste text from clipboard</string>
+    <string name="cd_history_delete">Delete this history record</string>
+    <string name="cd_history_load">Load this record into the editor</string>
+    <string name="cd_expand_history">Toggle history section</string>
+</resources>

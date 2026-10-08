@@ -1,0 +1,6 @@
+{
+  "name": "Word Counter",
+  "description": "Gaming-inspired text diagnostics and word counter utility with real-time metrics, paragraph detection, and calculation history.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

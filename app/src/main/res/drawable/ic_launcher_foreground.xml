@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Glowing circular radar frame -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#3300FF88"
+        android:strokeWidth="2"
+        android:pathData="M54,26 A28,28 0 1,0 54,82 A28,28 0 1,0 54,26" />
+
+    <!-- Corner HUD targeting reticles -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#00FF88"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="square"
+        android:pathData="M32,38 L32,32 L38,32 M76,38 L76,32 L70,32 M32,70 L32,76 L38,76 M76,70 L76,76 L70,76" />
+
+    <!-- Bold Cyber "W" Shape representing Word Counter -->
+    <path
+        android:fillColor="#00E676"
+        android:pathData="M38,40 L44,40 L49,58 L54,43 L55,43 L60,58 L65,40 L71,40 L63,68 L57,68 L52,52 L47,68 L41,68 Z" />
+
+    <!-- Bottom scanning bar / digital frequency indicator -->
+    <path
+        android:fillColor="#80E5FF"
+        android:pathData="M43,72h4v2h-4z M49,72h4v2h-4z M55,72h4v2h-4z M61,72h4v2h-4z" />
+</vector>
