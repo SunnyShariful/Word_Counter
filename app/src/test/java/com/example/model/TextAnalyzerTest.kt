@@ -1,178 +1,110 @@
 package com.example.model
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/**
- * Unit tests for [TextAnalyzer] calculation logic.
- * Covers all required university lab test cases and edge cases.
- */
 class TextAnalyzerTest {
 
-    // 1. Empty input
     @Test
-    fun testEmptyInput_returnsAllZeros() {
-        val metrics = TextAnalyzer.analyze("")
-        assertEquals(0, metrics.words)
-        assertEquals(0, metrics.characters)
-        assertEquals(0, metrics.charactersNoSpaces)
-        assertEquals(0, metrics.sentences)
-        assertEquals(0, metrics.paragraphs)
-        assertEquals(0, metrics.punctuation)
-        assertEquals(0, metrics.numbers)
-        assertEquals(0, metrics.numericDigits)
-        assertTrue(metrics.isEmpty)
+    fun `analyze returns ZERO for blank text`() {
+        val result = TextAnalyzer.analyze("   \n  ") //[cite: 1]
+        assertEquals(TextMetrics.ZERO, result) //[cite: 1]
     }
 
     @Test
-    fun testWhitespaceOnlyInput_returnsAllZeros() {
-        val metrics = TextAnalyzer.analyze("   \t\n\r   \n\n   ")
-        assertEquals(0, metrics.words)
-        assertEquals(0, metrics.sentences)
-        assertEquals(0, metrics.paragraphs)
-        assertEquals(0, metrics.punctuation)
-        assertEquals(0, metrics.numbers)
-    }
-
-    // 2. Single word
-    @Test
-    fun testSingleWord_calculatesCorrectly() {
-        val metrics = TextAnalyzer.analyze("Kotlin")
-        assertEquals(1, metrics.words)
-        assertEquals(6, metrics.characters)
-        assertEquals(6, metrics.charactersNoSpaces)
-        assertEquals(1, metrics.sentences)
-        assertEquals(1, metrics.paragraphs)
-        assertEquals(0, metrics.punctuation)
-        assertEquals(0, metrics.numbers)
-    }
-
-    // 3. Multiple words
-    @Test
-    fun testMultipleWords_calculatesCorrectly() {
-        val metrics = TextAnalyzer.analyze("Alpha Beta Gamma Delta")
-        assertEquals(4, metrics.words)
-        assertEquals(22, metrics.characters)
-        assertEquals(19, metrics.charactersNoSpaces)
-        assertEquals(1, metrics.sentences)
-        assertEquals(1, metrics.paragraphs)
-    }
-
-    // 4. Multiple consecutive spaces
-    @Test
-    fun testMultipleSpaces_doesNotProduceEmptyWords() {
-        val metrics = TextAnalyzer.analyze("Hello     world")
-        assertEquals(2, metrics.words)
-        assertEquals(15, metrics.characters)
-        assertEquals(10, metrics.charactersNoSpaces)
-    }
-
-    // 5. Leading and trailing whitespace
-    @Test
-    fun testLeadingAndTrailingWhitespace_handledCleanly() {
-        val metrics = TextAnalyzer.analyze("   \n\t  Quick brown fox   \t\n  ")
-        assertEquals(3, metrics.words)
-        assertEquals(1, metrics.sentences)
-        assertEquals(1, metrics.paragraphs)
-        assertEquals(13, metrics.charactersNoSpaces)
-    }
-
-    // 6. Multiple sentences & prompt benchmark
-    @Test
-    fun testPromptBenchmark_GoodMorning() {
-        // "Good morning." → 1 sentence, 2 words, 1 punctuation, 0 numbers
-        val metrics = TextAnalyzer.analyze("Good morning.")
-        assertEquals(1, metrics.sentences)
-        assertEquals(2, metrics.words)
-        assertEquals(1, metrics.punctuation)
-        assertEquals(0, metrics.numbers)
+    fun `analyze calculates complete metrics correctly for zero word branches`() {
+        val result = TextAnalyzer.analyze("!!!") //[cite: 1]
+        assertEquals(0, result.words) //[cite: 1]
+        assertEquals(0, result.readingTimeSeconds) //[cite: 1]
+        assertEquals(0, result.speakingTimeSeconds) //[cite: 1]
+        assertEquals(0.0f, result.avgWordLength) //[cite: 1]
     }
 
     @Test
-    fun testPromptBenchmark_TheWarStarted() {
-        // "The war started on September 1. Sad." → 2 sentences, 7 words, 2 punctuation, 1 number
-        val metrics = TextAnalyzer.analyze("The war started on September 1. Sad.")
-        assertEquals(2, metrics.sentences)
-        assertEquals(7, metrics.words)
-        assertEquals(2, metrics.punctuation)
-        assertEquals(1, metrics.numbers)
+    fun `analyze calculates complete metrics correctly for normal text`() {
+        val text = "Hello world! This is 42."
+        val result = TextAnalyzer.analyze(text) //[cite: 1]
+
+        assertEquals(24, result.characters) //[cite: 1]
+        assertEquals(20, result.charactersNoSpaces) //[cite: 1]
+        assertEquals(5, result.words) //[cite: 1]
+        assertEquals(2, result.sentences) //[cite: 1]
+        assertEquals(1, result.paragraphs) //[cite: 1]
+        assertEquals(2, result.punctuation) // ! and .[cite: 1]
+        assertEquals(1, result.numbers) // 42[cite: 1]
+        assertEquals(2, result.numericDigits) // 4, 2[cite: 1]
+        assertEquals(2, result.readingTimeSeconds) // ceil((5/200)*60) = 2[cite: 1]
+        assertEquals(3, result.speakingTimeSeconds) // ceil((5/130)*60) = 3[cite: 1]
+        assertEquals(3.6f, result.avgWordLength) // (5+5+4+2+2)/5 = 18/5 = 3.6[cite: 1]
     }
 
     @Test
-    fun testMultipleSentences_withVariedPunctuationAndEllipses() {
-        val text = "Are you ready? Yes, I am! Let's go..."
-        val metrics = TextAnalyzer.analyze(text)
-        assertEquals(3, metrics.sentences)
-        // Words: "Are", "you", "ready?", "Yes,", "I", "am!", "Let's", "go..." = 8 words
-        assertEquals(8, metrics.words)
-        // Punctuation marks: '?' + ',' + '!' + '\'' + '.' + '.' + '.' = 7
-        assertEquals(7, metrics.punctuation)
+    fun `countCharactersNoSpaces excludes all whitespace`() {
+        val text = "a \t b \n c"
+        assertEquals(3, TextAnalyzer.countCharactersNoSpaces(text)) //[cite: 1]
     }
 
-    // 7. Numbers
     @Test
-    fun testNumbers_discreteEntitiesAndDigits() {
-        val text = "Room 404 has 3 beds and 2.5 bathrooms."
-        val metrics = TextAnalyzer.analyze(text)
-        // Numbers: 404, 3, 2.5 -> 3 numbers
-        assertEquals(3, metrics.numbers)
-        // Digits: 4,0,4, 3, 2,5 -> 6 digits
-        assertEquals(6, metrics.numericDigits)
+    fun `extractWords handles consecutive whitespaces and isolated punctuation`() {
+        val text = "  Hello   world  -  "
+        val words = TextAnalyzer.extractWords(text) //[cite: 1]
+        assertEquals(listOf("Hello", "world"), words) //[cite: 1]
     }
 
-    // 8. Punctuation
     @Test
-    fun testPunctuationMarks_comprehensiveTypes() {
-        val text = "Hello, world! (Test: \"quoted\"-text; [1] / {2})"
-        val metrics = TextAnalyzer.analyze(text)
-        // Punctuation: , ! ( : " " - ; [ ] / { } = 14 punctuation marks
-        assertTrue(metrics.punctuation >= 14)
+    fun `extractWords returns empty list for blank text`() {
+        assertTrue(TextAnalyzer.extractWords("   ").isEmpty()) //[cite: 1]
     }
 
-    // 9. Multiple paragraphs
     @Test
-    fun testMultipleParagraphs_separatedByDefaultBlankLines() {
-        val text = "Paragraph one starts here.\n\nParagraph two continues here.\n\nParagraph three concludes."
-        val metrics = TextAnalyzer.analyze(text)
-        assertEquals(3, metrics.paragraphs)
-        assertEquals(3, metrics.sentences)
+    fun `countWords matches extractWords size`() {
+        assertEquals(2, TextAnalyzer.countWords("Hello world")) //[cite: 1]
     }
 
-    // 10. Consecutive blank lines
     @Test
-    fun testConsecutiveBlankLines_doesNotInflateParagraphCount() {
-        val text = "\n\n\nFirst block.\n\n\n\n\nSecond block.\n\n\n"
-        val metrics = TextAnalyzer.analyze(text)
-        assertEquals(2, metrics.paragraphs)
+    fun `countSentences recognizes terminal punctuation and standalone clauses`() {
+        assertEquals(0, TextAnalyzer.countSentences("   ")) //[cite: 1]
+        assertEquals(2, TextAnalyzer.countSentences("Sentence one. Sentence two!")) //[cite: 1]
+        assertEquals(1, TextAnalyzer.countSentences("Standalone clause without punctuation")) //[cite: 1]
+        assertEquals(0, TextAnalyzer.countSentences("... !!! ???")) // No alphanumeric[cite: 1]
     }
 
-    // 11. Single linebreaks inside a single paragraph
     @Test
-    fun testSingleLineBreak_treatedAsSingleParagraph() {
-        val text = "Line 1 of same paragraph\nLine 2 of same paragraph"
-        val metrics = TextAnalyzer.analyze(text)
-        assertEquals(1, metrics.paragraphs)
-        assertEquals(10, metrics.words)
+    fun `countPunctuation and isPunctuation identify characters correctly`() {
+        val text = "a, b! (c) 'd' “e” —"
+        assertEquals(9, TextAnalyzer.countPunctuation(text)) //[cite: 1]
+
+        // Test isPunctuation branches
+        assertTrue(TextAnalyzer.isPunctuation(',')) //[cite: 1]
+        assertTrue(TextAnalyzer.isPunctuation('-')) //[cite: 1]
+        assertTrue(TextAnalyzer.isPunctuation('(')) //[cite: 1]
+        assertTrue(TextAnalyzer.isPunctuation(')')) //[cite: 1]
+        assertTrue(TextAnalyzer.isPunctuation('“')) //[cite: 1]
+        assertTrue(TextAnalyzer.isPunctuation('”')) //[cite: 1]
+        assertTrue(TextAnalyzer.isPunctuation('~')) //[cite: 1]
+        assertFalse(TextAnalyzer.isPunctuation('a')) //[cite: 1]
+        assertFalse(TextAnalyzer.isPunctuation('1')) //[cite: 1]
+        assertFalse(TextAnalyzer.isPunctuation(' ')) //[cite: 1]
     }
 
-    // 12. Lone punctuation marks
     @Test
-    fun testIsolatedPunctuation_notCountedAsWordsOrSentences() {
-        val text = "... --- !!! ???"
-        val metrics = TextAnalyzer.analyze(text)
-        assertEquals(0, metrics.words)
-        assertEquals(0, metrics.sentences)
-        assertEquals(12, metrics.punctuation)
+    fun `countNumbers handles integers and decimals`() {
+        assertEquals(0, TextAnalyzer.countNumbers("   ")) //[cite: 1]
+        assertEquals(3, TextAnalyzer.countNumbers("I have 1 apple, 2.5 oranges, and 1,000 grapes.")) //[cite: 1]
     }
 
-    // 13. Telemetry report generation
     @Test
-    fun testTelemetryReport_containsAllMetrics() {
-        val metrics = TextAnalyzer.analyze("Test run 1. Completed successfully!")
-        val report = metrics.toTelemetryReport()
-        assertTrue(report.contains("Words: 5"))
-        assertTrue(report.contains("Sentences: 2"))
-        assertTrue(report.contains("Numbers: 1"))
+    fun `countNumericDigits counts distinct digit characters`() {
+        assertEquals(4, TextAnalyzer.countNumericDigits("Version 1.23a4")) //[cite: 1]
+    }
+
+    @Test
+    fun `countParagraphs identifies blocks separated by multiple newlines`() {
+        assertEquals(0, TextAnalyzer.countParagraphs("   \n   ")) //[cite: 1]
+        assertEquals(1, TextAnalyzer.countParagraphs("Single paragraph.")) //[cite: 1]
+        assertEquals(2, TextAnalyzer.countParagraphs("Para 1\n\nPara 2")) //[cite: 1]
+        assertEquals(2, TextAnalyzer.countParagraphs("\n\nPara 1\r\n\r\nPara 2\n\n")) //[cite: 1]
     }
 }

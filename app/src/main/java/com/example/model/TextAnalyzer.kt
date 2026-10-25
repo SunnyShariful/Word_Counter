@@ -82,10 +82,8 @@ object TextAnalyzer {
         if (trimmed.isEmpty()) return emptyList()
 
         return trimmed.split(WHITESPACE_REGEX)
-            .filter { token ->
-                // A word token must contain at least one letter or digit
-                token.any { ch -> ch.isLetterOrDigit() }
-            }
+            .map { token -> token.trim { !it.isLetterOrDigit() } }
+            .filter { token -> token.isNotEmpty() }
     }
 
     /**

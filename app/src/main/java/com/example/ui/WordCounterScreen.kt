@@ -3,11 +3,9 @@ package com.example.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,8 +15,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.FormatAlignLeft
 import androidx.compose.material.icons.filled.Calculate
-import androidx.compose.material.icons.filled.FormatAlignLeft
 import androidx.compose.material.icons.filled.Numbers
 import androidx.compose.material.icons.filled.PendingActions
 import androidx.compose.material.icons.filled.Share
@@ -163,13 +161,11 @@ fun WordCounterScreen(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-        BoxWithConstraints(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            val isTabletOrWide = maxWidth >= 600.dp
-
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -205,8 +201,7 @@ fun WordCounterScreen(
 
                         // 3. Grid of Detailed Metric Cards
                         DetailedMetricsGrid(
-                            metrics = metrics,
-                            isWide = isTabletOrWide
+                            metrics = metrics
                         )
 
                         // 4. Runtime Calculation History Section
@@ -238,7 +233,6 @@ fun WordCounterScreen(
 @Composable
 private fun DetailedMetricsGrid(
     metrics: com.example.model.TextMetrics,
-    isWide: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -264,7 +258,7 @@ private fun DetailedMetricsGrid(
             MetricCard(
                 title = stringResource(R.string.metric_paragraphs),
                 value = metrics.paragraphs,
-                icon = Icons.Default.FormatAlignLeft,
+                icon = Icons.AutoMirrored.Filled.FormatAlignLeft,
                 testTag = "metric_card_paragraphs",
                 subValueText = if (metrics.paragraphs > 0) "${metrics.sentences / metrics.paragraphs.coerceAtLeast(1)} sent/paragraph" else "0 paragraphs",
                 accentColor = CyberCyan,

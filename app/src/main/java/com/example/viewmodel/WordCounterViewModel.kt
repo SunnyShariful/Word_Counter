@@ -1,7 +1,6 @@
 package com.example.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.model.HistoryItem
 import com.example.model.TextAnalyzer
 import com.example.model.TextMetrics
@@ -11,7 +10,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 sealed class UiEvent {
     data class ShowSnackbar(val message: String, val actionLabel: String? = null, val onAction: (() -> Unit)? = null) : UiEvent()
@@ -28,7 +26,7 @@ class WordCounterViewModel : ViewModel() {
     private val _history = MutableStateFlow<List<HistoryItem>>(emptyList())
     val history: StateFlow<List<HistoryItem>> = _history.asStateFlow()
 
-    private val _uiEvents = MutableSharedFlow<UiEvent>()
+    private val _uiEvents = MutableSharedFlow<UiEvent>(extraBufferCapacity = 64)
     val uiEvents: SharedFlow<UiEvent> = _uiEvents.asSharedFlow()
 
     private var previousClearedText: String? = null
@@ -71,24 +69,20 @@ Final test metric: 123 items analyzed with 99.9% precision."""
     fun clearText() {
         val current = _inputText.value
         if (current.isEmpty()) {
-            viewModelScope.launch {
-                _uiEvents.emit(UiEvent.ShowSnackbar("Editor is already empty."))
-            }
+            _uiEvents.tryEmit(UiEvent.ShowSnackbar("Editor is already empty."))
             return
         }
 
         previousClearedText = current
         onTextChanged("")
 
-        viewModelScope.launch {
-            _uiEvents.emit(
-                UiEvent.ShowSnackbar(
-                    message = "Input text cleared.",
-                    actionLabel = "UNDO",
-                    onAction = { undoClear() }
-                )
+        _uiEvents.tryEmit(
+            UiEvent.ShowSnackbar(
+                message = "Input text cleared.",
+                actionLabel = "UNDO",
+                onAction = { undoClear() }
             )
-        }
+        )
     }
 
     /**
@@ -98,9 +92,7 @@ Final test metric: 123 items analyzed with 99.9% precision."""
         previousClearedText?.let { textToRestore ->
             onTextChanged(textToRestore)
             previousClearedText = null
-            viewModelScope.launch {
-                _uiEvents.emit(UiEvent.ShowSnackbar("Text restored."))
-            }
+            _uiEvents.tryEmit(UiEvent.ShowSnackbar("Text restored."))
         }
     }
 
@@ -113,9 +105,7 @@ Final test metric: 123 items analyzed with 99.9% precision."""
         onTextChanged(sample)
         // Automatically snapshot the generated sample into history
         recordCurrentToHistory(silent = true)
-        viewModelScope.launch {
-            _uiEvents.emit(UiEvent.ShowSnackbar("Sample test scenario generated."))
-        }
+        _uiEvents.tryEmit(UiEvent.ShowSnackbar("Sample test scenario generated."))
     }
 
     /**
@@ -125,9 +115,7 @@ Final test metric: 123 items analyzed with 99.9% precision."""
         val text = _inputText.value
         if (text.isBlank()) {
             if (!silent) {
-                viewModelScope.launch {
-                    _uiEvents.emit(UiEvent.ShowSnackbar("Input is empty. Enter text first."))
-                }
+                _uiEvents.tryEmit(UiEvent.ShowSnackbar("Input is empty. Enter text first."))
             }
             return
         }
@@ -136,9 +124,7 @@ Final test metric: 123 items analyzed with 99.9% precision."""
         val existing = _history.value.firstOrNull { it.fullText == text }
         if (existing != null) {
             if (!silent) {
-                viewModelScope.launch {
-                    _uiEvents.emit(UiEvent.ShowSnackbar("Telemetry snapshot already recorded."))
-                }
+                _uiEvents.tryEmit(UiEvent.ShowSnackbar("Telemetry snapshot already recorded."))
             }
             return
         }
@@ -152,9 +138,7 @@ Final test metric: 123 items analyzed with 99.9% precision."""
         _history.value = updatedList.take(MAX_HISTORY_ITEMS)
 
         if (!silent) {
-            viewModelScope.launch {
-                _uiEvents.emit(UiEvent.ShowSnackbar("Telemetry snapshot recorded in history."))
-            }
+            _uiEvents.tryEmit(UiEvent.ShowSnackbar("Telemetry snapshot recorded in history."))
         }
     }
 
@@ -163,9 +147,7 @@ Final test metric: 123 items analyzed with 99.9% precision."""
      */
     fun loadHistoryItem(item: HistoryItem) {
         onTextChanged(item.fullText)
-        viewModelScope.launch {
-            _uiEvents.emit(UiEvent.ShowSnackbar("Loaded historical snapshot into editor."))
-        }
+        _uiEvents.tryEmit(UiEvent.ShowSnackbar("Loaded historical snapshot into editor."))
     }
 
     /**
@@ -173,9 +155,7 @@ Final test metric: 123 items analyzed with 99.9% precision."""
      */
     fun deleteHistoryItem(item: HistoryItem) {
         _history.value = _history.value.filter { it.id != item.id }
-        viewModelScope.launch {
-            _uiEvents.emit(UiEvent.ShowSnackbar("Telemetry record removed."))
-        }
+        _uiEvents.tryEmit(UiEvent.ShowSnackbar("Telemetry record removed."))
     }
 
     /**
@@ -183,8 +163,6 @@ Final test metric: 123 items analyzed with 99.9% precision."""
      */
     fun clearHistory() {
         _history.value = emptyList()
-        viewModelScope.launch {
-            _uiEvents.emit(UiEvent.ShowSnackbar("Calculation history cleared."))
-        }
+        _uiEvents.tryEmit(UiEvent.ShowSnackbar("Calculation history cleared."))
     }
 }
